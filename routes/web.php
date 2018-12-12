@@ -14,3 +14,9 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+/**
+ * Show orders list
+ */
+Route::get('order/list', 'OrderController@list');
+Route::get('order/one', 'OrderController@one');
