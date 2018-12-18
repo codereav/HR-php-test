@@ -35,11 +35,12 @@
                             {{ $order->partner->name }}
                         </td>
                         <td>
-                            {{ $order->products->sum('summa') }}
+                            {{ $order->orderSum }}
                         </td>
                         <td>
                             @foreach ($order->products as $product)
-                                {{ $product->name }} - {{ $product->quantity }}<br>
+                                {{ $product->name }} - {{ $product->pivot->quantity }}шт ({{ $product->pivot->price }}руб)
+                                <br>
                             @endforeach
                         </td>
                         <td>
