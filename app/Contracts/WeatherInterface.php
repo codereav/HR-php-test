@@ -8,7 +8,12 @@
 
 namespace App\Contracts;
 
-interface IWeather
+use Illuminate\Http\Request;
+use GuzzleHttp\Client;
+
+interface WeatherInterface
 {
-    public function getWeather();
+    public function __construct(Client $httpClient, Request $httpRequest);
+
+    public function getWeather(): string;
 }

@@ -20,3 +20,4 @@ Route::get('/', function () {
  */
 Route::get('order/list', 'OrderController@list');
 Route::get('order/one', 'OrderController@one');
+Route::get('weather/show', 'WeatherController@show');

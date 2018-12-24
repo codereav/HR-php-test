@@ -9,7 +9,6 @@ class OrderController extends Controller
 
     public function list()
     {
-
         $orders = Order::with('products', 'partner')->paginate(25);
         return view('order.list', ['orders' => $orders]);
     }

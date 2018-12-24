@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App;
+use App\Services\YandexWeatherService;
+use App\Contracts\WeatherInterface;
 
 class WeatherServiceProvider extends ServiceProvider
 {
@@ -23,6 +26,6 @@ class WeatherServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind(WeatherInterface::class, YandexWeatherService::class);
     }
 }

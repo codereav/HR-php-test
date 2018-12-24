@@ -28,24 +28,21 @@
                 <tbody>
                 @foreach ($orders as $order)
                     <tr>
-                        <th scope="row">
-                            <a href="#">{{ $order->id }}</a>
-                        </th>
+                        <th scope="row"><a href="#">{{ $order->id }}</a></th>
+                        <td>{{ $order->partner->name }}</td>
+                        <td>{{ $order->orderSum }} руб</td>
                         <td>
-                            {{ $order->partner->name }}
+                            <table class="table table-striped table-condensed">
+                                @foreach ($order->products as $product)
+                                    <tr>
+                                        <td>{{ $product->name }}</td>
+                                        <td>{{ $product->pivot->quantity }}шт</td>
+                                        <td>({{ $product->pivot->price }} руб)</td>
+                                    </tr>
+                                @endforeach
+                            </table>
                         </td>
-                        <td>
-                            {{ $order->orderSum }}
-                        </td>
-                        <td>
-                            @foreach ($order->products as $product)
-                                {{ $product->name }} - {{ $product->pivot->quantity }}шт ({{ $product->pivot->price }}руб)
-                                <br>
-                            @endforeach
-                        </td>
-                        <td>
-                            {{ $order->status }}
-                        </td>
+                        <td>{{ $order->status }}</td>
                     </tr>
                 @endforeach
                 </tbody>
