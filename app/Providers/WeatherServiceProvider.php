@@ -3,10 +3,14 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App;
 use App\Services\YandexWeatherService;
-use App\Contracts\WeatherInterface;
+use App\Contracts\WeatherServiceInterface;
+use Http\Adapter\Guzzle6\Client as HttpClient;
 
+/**
+ * Class WeatherServiceProvider
+ * @package App\Providers
+ */
 class WeatherServiceProvider extends ServiceProvider
 {
     /**
@@ -14,7 +18,7 @@ class WeatherServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         //
     }
@@ -24,8 +28,13 @@ class WeatherServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
-        $this->app->bind(WeatherInterface::class, YandexWeatherService::class);
+        $this->app->bind(WeatherServiceInterface::class, function () {
+            return new YandexWeatherService(
+                env('YANDEX_API_KEY'),
+                new HttpClient()
+            );
+        });
     }
 }

@@ -2,23 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\WeatherInterface;
+use App\Contracts\WeatherServiceInterface;
+use App\Services\WeatherRequest;
 
 class WeatherController extends Controller
 {
     /**
-     * @var IWeather - weather service.
+     * @var WeatherServiceInterface - weather service.
      */
     private $weather;
 
-    public function __construct(WeatherInterface $weather)
+    public function __construct(WeatherServiceInterface $weather)
     {
         $this->weather = $weather;
     }
 
     public function show()
     {
-        $weatherData = $this->weather->getWeather();
-        return view('weather.show', ['weather' => json_decode($weatherData)]);
+        $weatherRequest = new WeatherRequest();
+        $weatherData = $this->weather->getWeather($weatherRequest);
+        return view('weather.show', ['weather' => $weatherData]);
     }
 }

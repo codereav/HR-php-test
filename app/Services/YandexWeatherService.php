@@ -8,104 +8,96 @@
 
 namespace App\Services;
 
-use App;
-use GuzzleHttp\Client;
-use Illuminate\Http\Request;
+use App\Contracts\WeatherServiceInterface;
+use GuzzleHttp\Psr7\Request;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestInterface;
 
-class YandexWeatherService implements App\Contracts\WeatherInterface
+/**
+ * Class YandexWeatherService
+ * @package App\Services
+ */
+class YandexWeatherService implements WeatherServiceInterface
 {
     /**
-     * @var string yandex api url.
+     * @const string - yandex api url.
      */
     private const YANDEX_API_URL = 'https://api.weather.yandex.ru/v1/forecast?';
 
-    //private const YANDEX_WEATHER_ICON_URL_TEMPLATE = 'https://yastatic.net/weather/i/icons/blueye/color/svg/%s.svg';
-
-    private const UNKNOWN_SETTLEMENT = 'Неизвестный населённый пункт';
-
     /**
-     * @var GuzzleHttp\Client
+     * @const string - API call http method.
      */
-    private $httpClient;
+    private const METHOD = 'GET';
 
     /**
-     * @var string Yandex API key.
+     * @const string - Yandex icon url template, must be modified by sprintf() method with name of icon file.
+     */
+    private const YANDEX_WEATHER_ICON_URL_TEMPLATE = 'https://yastatic.net/weather/i/icons/blueye/color/svg/%s.svg';
+
+    /**
+     * @var ClientInterface
+     */
+    private $client;
+
+    /**
+     * @var string - Yandex API key.
      */
     private $yandexApiKey;
 
-    /**
-     * @var string API call http method.
-     */
-    private $method = 'GET';
-
-    private $settlement = 'Брянск';
-    private $lat = '53.243325';
-    private $lon = '34.363731';
-    private $lang = 'ru_RU';
-    private $limit = '7';
-    private $hours = 'true';
-    private $extra = 'true';
 
     /**
      * YandexWeatherService constructor.
-     * @param \GuzzleHttp\Client $httpClient
-     * @param Request $httpRequest
+     * @param string $api_key
+     * @param ClientInterface $client
      */
-    public function __construct(Client $httpClient, Request $httpRequest)
+    public function __construct(string $api_key, ClientInterface $client)
     {
-        $this->httpClient = $httpClient;
-
-        /** Get 'settlement' param if exists 'lat' or 'lon' param, if 'settlement' missing - stay 'unknown' from const*/
-        if ($httpRequest->request->get('lat') || $httpRequest->request->get('lon')) {
-            $this->settlement = $httpRequest->request->get('settlement') ?? self::UNKNOWN_SETTLEMENT;
-        }
-
-        /** Get other request params from url, if one of them missing - stay default value */
-        $this->lat = $httpRequest->request->get('lat') ?? $this->lat;
-        $this->lon = $httpRequest->request->get('lon') ?? $this->lon;
-        $this->lang = $httpRequest->request->get('lang') ?? $this->lang;
-        $this->limit = $httpRequest->request->get('limit') ?? $this->limit;
-        $this->hours = $httpRequest->request->get('hours') ?? $this->hours;
-        $this->extra = $httpRequest->request->get('extra') ?? $this->extra;
-
-        /** Get yandex api key from .env file */
-        $this->yandexApiKey = getenv('YANDEX_API_KEY');
+        $this->yandexApiKey = $api_key;
+        $this->client = $client;
     }
 
     /**
      * Return json-encoded weather data
-     * @return string
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @param WeatherRequest $weatherRequest
+     * @return Weather
+     * @throws \Psr\Http\Client\ClientExceptionInterface
      */
-    public function getWeather(): string
+    public function getWeather(WeatherRequest $weatherRequest): Weather
     {
-        return $this->request();
+        /** GuzzleHttp\Psr7\Request */
+        $request = new Request(
+            self::METHOD,
+            self::YANDEX_API_URL . http_build_query(
+                [
+                    'lat' => $weatherRequest->getLat(),
+                    'lon' => $weatherRequest->getLon(),
+                    'lang' => $weatherRequest->getLang(),
+                    'limit' => $weatherRequest->getLimit(),
+                    'hours' => $weatherRequest->getHours(),
+                    'extra' => $weatherRequest->getExtra()
+                ]
+            ),
+            ['X-Yandex-API-Key' => $this->yandexApiKey]
+        );
+        $result = $this->sendRequest($request);
+
+        $weather = new Weather();
+        $weather->setSettlement($weatherRequest->getSettlement());
+        $weather->setFactTemp($result->fact->temp);
+        $weather->setFactFeelsLike($result->fact->feels_like);
+        $weather->setFactIcon(sprintf(self::YANDEX_WEATHER_ICON_URL_TEMPLATE,$result->fact->icon));
+
+        return $weather;
     }
 
     /**
      * Call to yandex weather api and return json-encoded data.
-     * @return string
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @param RequestInterface $request
+     * @return \StdClass json
+     * @throws \Psr\Http\Client\ClientExceptionInterface
      */
-    private function request(): string
+    private function sendRequest(RequestInterface $request): \StdClass
     {
-        return $this->httpClient->request(
-            $this->method,
-            self::YANDEX_API_URL,
-            [
-                'headers' => [
-                    'X-Yandex-API-Key' => $this->yandexApiKey
-                ],
-                'query' => [
-                    'lat' => $this->lat,
-                    'lon' => $this->lon,
-                    'lang' => $this->lang,
-                    'limit' => $this->limit,
-                    'hours' => $this->hours,
-                    'extra' => $this->extra
-                ],
-                'debug' => false
-            ]
-        )->getBody();
+        return json_decode($this->client->sendRequest($request)->getBody()->getContents());
     }
 }

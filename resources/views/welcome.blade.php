@@ -1,4 +1,6 @@
 @extends('layout')
+@section('title')
+@endsection
 @section('content')
     <style>
         html, body {
@@ -68,7 +70,7 @@
                 Laravel
             </div>
             <div class="links">
-                <a href="#">Погода в Брянске</a>
+                <a href="{{url('weather/show')}}">Погода в Брянске</a>
                 <a href="{{url('order/list')}}">Список заказов</a>
                 <a href="{{url('product/list')}}">Список продуктов</a>
                 <a href="https://forge.laravel.com">Forge</a>

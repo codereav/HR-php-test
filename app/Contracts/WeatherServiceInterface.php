@@ -8,12 +8,26 @@
 
 namespace App\Contracts;
 
-use Illuminate\Http\Request;
-use GuzzleHttp\Client;
+use Psr\Http\Client\ClientInterface;
+use App\Services\Weather;
+use App\Services\WeatherRequest;
 
-interface WeatherInterface
+/**
+ * Interface WeatherServiceInterface
+ * @package App\Contracts
+ */
+interface WeatherServiceInterface
 {
-    public function __construct(Client $httpClient, Request $httpRequest);
+    /**
+     * WeatherServiceInterface constructor.
+     * @param string $api_key
+     * @param ClientInterface $client
+     */
+    public function __construct(string $api_key, ClientInterface $client);
 
-    public function getWeather(): string;
+    /**
+     * @param WeatherRequest $weatherRequest
+     * @return Weather
+     */
+    public function getWeather(WeatherRequest $weatherRequest): Weather;
 }
