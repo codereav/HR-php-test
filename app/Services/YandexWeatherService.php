@@ -38,13 +38,13 @@ class YandexWeatherService implements App\Contracts\WeatherInterface
      */
     private $method = 'GET';
 
-    protected $settlement = 'Брянск';
-    protected $lat = '53.243325';
-    protected $lon = '34.363731';
-    protected $lang = 'ru_RU';
-    protected $limit = '7';
-    protected $hours = 'true';
-    protected $extra = 'true';
+    private $settlement = 'Брянск';
+    private $lat = '53.243325';
+    private $lon = '34.363731';
+    private $lang = 'ru_RU';
+    private $limit = '7';
+    private $hours = 'true';
+    private $extra = 'true';
 
     /**
      * YandexWeatherService constructor.
